@@ -1,23 +1,44 @@
-import urllib.request
-import json
-
-JSON_URL = 'https://raw.githubusercontent.com/theikkila/postinumerot/master/postcode_map_light.json'
+from postitoimipaikka import hae_postinumerot
 
 
-def hae_postinumerot():
-    with urllib.request.urlopen(JSON_URL) as response:
-        return json.loads(response.read())
+def ryhmittele_toimipaikkoihin(postinumerot):
+    toimipaikat = {}
+    for numero, nimi in postinumerot.items():
+        if nimi in toimipaikat:
+            toimipaikat[nimi].append(numero)
+        else:
+            toimipaikat[nimi] = [numero]
+
+    return toimipaikat
+
+
+def etsi_toimipaikan_numerot(toimipaikan_nimi, toimipaikat):
+    nimi_isolla = toimipaikan_nimi.strip().upper()
+    if nimi_isolla in toimipaikat:
+        return toimipaikat[nimi_isolla]
+    else:
+        return []
+
+
+def muotoile_tuloste(numerot):
+    if numerot:
+        return 'Postinumerot: ' + ', '.join(numerot)
+    else:
+        return 'Postitoimipaikkaa ei löytynyt :('
 
 
 def main():
-    haettava = input('Kirjoita postinumero: ').strip()
-
     postinumerot = hae_postinumerot()
 
-    if haettava in postinumerot:
-        print(postinumerot[haettava].title())
-    else:
-        print('Postitoimipaikkaa ei löytynyt :(')
+    toimipaikat = ryhmittele_toimipaikkoihin(postinumerot)
+
+    etsittava = input('Kirjoita postitoimipaikka: ')
+
+    numerot = etsi_toimipaikan_numerot(etsittava, toimipaikat)
+
+    tuloste = muotoile_tuloste(numerot)
+
+    print(tuloste)
 
 
 if __name__ == '__main__':
